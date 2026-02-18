@@ -123,7 +123,7 @@ const API="https://script.google.com/macros/s/AKfycbzGsZf77mHFUbso_BMUKzGO3C7TIo
 let scanner=null;
 let scanning=false;
 let resetTimer;
-
+  
 function beep(){
   const ctx=new(window.AudioContext||window.webkitAudioContext)();
   const o=ctx.createOscillator();
@@ -147,7 +147,11 @@ function tampil(data){
 
   clearTimeout(resetTimer);
   resetTimer=setTimeout(()=>{
-    hasil.innerHTML=<div class="result">;
+    hasil.innerHTML=<div class="result">
+      <div>${data.nama}</div>
+      <div class="harga">Rp ${data.harga}</div>
+      <div>Stock: ${data.stock}</div>
+    </div>`;
     barcode.value="";
     scanning=true;
   },5000);
@@ -174,7 +178,7 @@ function startScan(){
 
   scanner.start(
     {facingMode:"environment"},
-    {fps:15,qrbox:280},
+    {fps:18,qrbox:260},
     txt=>{
       beep();
       barcode.value=txt;
