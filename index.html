@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta charset="UTF-8">
+<title>PRICE CHECKING TRANSMART MEDAN FAIR</title>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:url('https://ik.imagekit.io/goodid/nyc/goodstats/uploads/articles/original/2022/07/25/supermarket-dengan-gerai-terbanyak-di-indonesia-2021-4GLGDeNKM2.jpg?tr=w-1200,h-630,fo-center')
+  center/cover no-repeat fixed;
+}
+.overlay{
+  background:rgba(0,0,0,0.55);
+  min-height:100vh;
+  padding:16px 0;
+}
+.container{
+  width:360px;
+  max-width:92%;
+  margin:auto;
+  background:#fff;
+  padding:18px;
+  border-radius:18px;
+  text-align:center;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+.logo{
+  width:190px;
+  display:block;
+  margin:0 auto 10px;
+}
+.title{
+  font-weight:bold;
+  font-size:18px;
+  margin-bottom:12px;
+}
+input{
+  width:100%;
+  padding:14px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  text-align:center;
+  font-size:16px;
+  box-sizing:border-box;
+}
+#reader{
+  width:100%;
+  height:260px;
+  margin:14px auto;
+  position:relative;
+  border:3px dashed #bbb;
+  border-radius:14px;
+  overflow:hidden;
+  background:#000;
+}
+.placeholder{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  color:#ccc;
+  font-size:14px;
+  pointer-events:none;
+  z-index:2;
+}
+#loadingText{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  color:#fff;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  z-index:3;
+}
+.scanline{
+  position:absolute;
+  left:0; right:0;
+  height:3px;
+  background:red;
+  animation:scan 2s linear infinite;
+  z-index:1;
+}
+@keyframes scan{
+  0%{top:0}
+  50%{top:94%}
+  100%{top:0}
+}
+video{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover;
+}
+.result{
+  margin-top:12px;
+  padding:18px;
+  border-radius:12px;
+  background:#fafafa;
+}
+.harga{
+  font-size:36px;
+  font-weight:bold;
+  background:#ffd400;
+  padding:6px 12px;
+  border-radius:8px;
+  display:inline-block;
+}
+</style>
+</head>
+
+<body>
+<div class="overlay">
+  <div class="container">
+
+    <!-- LOGO -->
+    <img class="logo"
+      src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Transmart.svg/960px-Transmart.svg.png"
+      alt="Transmart Logo">
+
+    <!-- JUDUL -->
+    <div class="title">PRICE CHECKING TRANSMART MEDAN FAIR</div>
+
+    <!-- INPUT MANUAL -->
+    <input id="barcode"
+      placeholder="Scan atau ketik barcode"
+      inputmode="numeric"
+      pattern="[0-9]*">
+
+    <!-- KAMERA -->
+    <div id="reader">
+      <div class="placeholder">
+        Arahkan barcode ke kamera
+      </div>
+      <div id="loadingText">Mohon tunggu...</div>
+      <div class="scanline"></div>
+    </div>
+
+    <!-- HASIL -->
+    <div id="hasil"></div>
+
+  </div>
+</div>
+
+<script>
+const API="https://script.google.com/macros/s/AKfycbzXWZKnzV3A6o_BTHk61gYRDY3g4RINhCeMUi2a98umSr8WSnAdXELfif4OLAUReCv5HQ/exec";
+
+let scanner;
+let scanLock=false;
+
+/* BEEP */
+function beep(){
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  const o=ctx.createOscillator();
+  o.type="square";
+  o.frequency.value=1000;
+  o.connect(ctx.destination);
+  o.start();
+  o.stop(ctx.currentTime+0.1);
+}
+
+/* TAMPIL HASIL */
+function tampil(data){
+  if(!data || !data.nama){
+    hasil.innerHTML="<div class='result'>Barang tidak ditemukan</div>";
+  }else{
+    hasil.innerHTML=`
+      <div class="result">
+        <div>${data.nama}</div>
+        <div class="harga">Rp ${data.harga}</div>
+        <div>Stock: ${data.stock}</div>
+      </div>`;
+  }
+}
+
+/* CARI DATA */
+async function cari(code){
+  scanLock=true;
+  loadingText.style.display="flex";
+
+  try{
+    const r=await fetch(API+"?barcode="+code);
+    tampil(await r.json());
+  }catch{
+    tampil(null);
+  }
+
+  loadingText.style.display="none";
+  setTimeout(()=>scanLock=false,700);
+}
+
+/* START CAMERA */
+function startCamera(){
+  scanner=new Html5Qrcode("reader");
+  const box=Math.min(reader.clientWidth,reader.clientHeight)-20;
+
+  scanner.start(
+    {facingMode:"environment"},
+    {fps:15,qrbox:box},
+    txt=>{
+      if(scanLock) return;
+      beep();
+      barcode.value=txt;
+      cari(txt);
+    }
+  );
+}
+
+/* INPUT MANUAL */
+barcode.addEventListener("change",()=>{
+  if(barcode.value.trim()==="") return;
+  cari(barcode.value.trim());
+  barcode.blur();
+});
+
+window.onload=startCamera;
+</script>
+
+</body>
+</html>
