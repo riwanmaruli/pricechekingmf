@@ -1,205 +1,201 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="UTF-8">
-<title>PRICE CHECKING TRANSMART MEDAN FAIR</title>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#e31837">
+<title>Cek Harga Transmart</title>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
+
 body{
   margin:0;
   font-family:Arial, sans-serif;
-  background:url('https://ik.imagekit.io/goodid/nyc/goodstats/uploads/articles/original/2022/07/25/supermarket-dengan-gerai-terbanyak-di-indonesia-2021-4GLGDeNKM2.jpg?tr=w-1200,h-630,fo-center') center/cover no-repeat fixed;
+  background:url("https://ik.imagekit.io/goodid/nyc/goodstats/uploads/articles/original/2022/07/25/supermarket-dengan-gerai-terbanyak-di-indonesia-2021-4GLGDeNKM2.jpg?tr=w-1200,h-630,fo-center") center/cover no-repeat fixed;
 }
+
 .overlay{
-  background:rgba(0,0,0,0.55);
+  backdrop-filter:blur(6px);
+  background:rgba(0,0,0,0.25);
   min-height:100vh;
-  padding:16px 0;
+  padding-top:25px;
 }
+
 .container{
-  width:360px;
+  width:360px;   /* diperlebar */
   max-width:92%;
   margin:auto;
-  background:#fff;
-  padding:18px;
+  background:white;
+  padding:25px;
   border-radius:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.4);
   text-align:center;
-  box-shadow:0 10px 30px rgba(0,0,0,.35);
 }
-.logo{width:170px;margin-bottom:6px;}
-.title{font-weight:bold;font-size:18px;margin-bottom:6px;}
+
+.logoimg{
+  width:180px;
+  margin-bottom:10px;
+}
+
+.subtitle{
+  color:#777;
+  margin-bottom:15px;
+  font-size:14px;
+}
+
+button{
+  width:100%;
+  padding:15px;
+  border:none;
+  border-radius:10px;
+  background:#e31837;
+  color:white;
+  font-weight:bold;
+  font-size:16px;
+  margin-bottom:10px;
+}
+
 input{
   width:100%;
-  padding:14px;
+  padding:15px;
   border-radius:10px;
   border:1px solid #ccc;
   text-align:center;
   font-size:16px;
-  box-sizing:border-box;
+  margin-bottom:10px;
 }
-#reader{
-  width:350px;        /* +25% BIGGER */
-  max-width:100%;
-  height:260px;       /* +25% BIGGER */
-  margin:14px auto;
-  position:relative;
-  border:3px dashed #bbb;
-  border-radius:14px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  overflow:hidden;
-  background:#fff;
-}
-.placeholder{
-  position:absolute;
-  text-align:center;
-  color:#888;
-  font-size:14px;
-  pointer-events:none;
-}
-.scanline{
-  position:absolute;
-  left:0; right:0;
-  height:3px;
-  background:red;
-  animation:scan 2s linear infinite;
-  display:none;
-}
-@keyframes scan{
-  0%{top:0}
-  50%{top:94%}
-  100%{top:0}
-}
+
+#reader{ margin-top:10px; }
+
 .result{
-  margin-top:12px;
-  padding:18px;
-  border-radius:12px;
+  margin-top:15px;
+  padding:22px;
+  border-radius:14px;
   background:#fafafa;
+  box-shadow:0 4px 15px rgba(0,0,0,0.15);
 }
+
+.nama{ font-size:19px; margin-bottom:10px; }
+
 .harga{
-  font-size:36px;
+  font-size:40px;
   font-weight:bold;
-  background:#ffd400;
-  padding:6px 12px;
-  border-radius:8px;
-  display:inline-block;
+  color:#e31837;
 }
+
+.stock{ margin-top:6px; color:#555; }
+
 </style>
 </head>
 
 <body>
+
 <div class="overlay">
-  <div class="container">
+<div class="container">
 
-    <img class="logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Transmart.svg/960px-Transmart.svg.png">
+<!-- LOGO TRANSMART ASLI -->
+<img class="logoimg"
+src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Transmart.svg">
 
-    <div class="title">PRICE CHECKING TRANSMART MEDAN FAIR</div>
+<div class="subtitle">PRICE CHECKING</div>
 
-    <input id="barcode" placeholder="Scan atau ketik barcode"
-      inputmode="numeric" pattern="[0-9]*">
+<button onclick="startScanner()"> SCAN </button>
 
-    <div id="reader">
-      <div class="placeholder" id="placeholder">
-        TAP DI SINI<br>UNTUK SCAN BARCODE
-      </div>
-      <div class="scanline" id="scanline"></div>
-    </div>
+<input id="barcode" placeholder="Masukkan Barcode Manual">
+<button onclick="cari()">CEK MANUAL</button>
 
-    <div id="hasil"></div>
+<div id="reader"></div>
+<div id="hasil"></div>
 
-  </div>
+</div>
 </div>
 
 <script>
-const API="https://script.google.com/macros/s/AKfycbzGsZf77mHFUbso_BMUKzGO3C7TIorsR8-5C2RI5-jTNWimv62qeMQhiq3D8uu90UADag/exec";
 
-let scanner=null;
-let scanning=false;
+const API="https://script.google.com/macros/s/AKfycbyRhOqgMlJTMNcyz8Wzm-gq1Yf9Pp7NCd7ZlRUCdZ88wTILNhCKhZo4xcvfkwW0Dhe6/exec";
+
+let scanner;
 let resetTimer;
-  
+
+/* bunyi beep */
 function beep(){
   const ctx=new(window.AudioContext||window.webkitAudioContext)();
   const o=ctx.createOscillator();
-  o.frequency.value=900;
+  o.frequency.value=950;
   o.connect(ctx.destination);
   o.start();
-  o.stop(ctx.currentTime+0.1);
+  o.stop(ctx.currentTime+0.12);
+}
+
+function resetLayar(){
+
+  clearTimeout(resetTimer);
+
+  resetTimer=setTimeout(()=>{
+    document.getElementById("hasil").innerHTML="";
+    document.getElementById("barcode").value="";
+  },5000); // reset 5 detik
 }
 
 function tampil(data){
-  if(!data || !data.nama){
-    hasil.innerHTML="<div class='result'>Barang tidak ditemukan</div>";
-  }else{
-    hasil.innerHTML=`<div class="result">
-      <div>${data.nama}</div>
-      <div class="harga">Rp ${data.harga}</div>
-      <div>Stock: ${data.stock}</div>
-    </div>`;
+
+  if(!data.nama){
+    document.getElementById("hasil").innerHTML=
+      "<div class='result'>Barang tidak ditemukan</div>";
+    resetLayar();
+    return;
   }
-}
 
-  clearTimeout(resetTimer);
-  resetTimer=setTimeout(()=>{
-    hasil.innerHTML=<div class="result">
-      <div>${data.nama}</div>
+  document.getElementById("hasil").innerHTML=
+  `<div class="result">
+      <div class="nama">${data.nama}</div>
       <div class="harga">Rp ${data.harga}</div>
-      <div>Stock: ${data.stock}</div>
-    </div>`;
-    barcode.value="";
-    scanning=true;
-  },5000);
-}
-  
-async function cari(code){
-  try{
-    const r=await fetch(API+"?barcode="+code);
-    tampil(await r.json());
-  }catch{
-    tampil(null);
-  }
+      <div class="stock">Stock: ${data.stock}</div>
+   </div>`;
+
+  resetLayar();
 }
 
-function startScan(){
+function cari(){
 
-  if(scanning) return;
+  let code=document.getElementById("barcode").value.trim();
+  if(!code) return;
 
-  scanning=true;
-  placeholder.style.display="none";
-  scanline.style.display="block";
+  fetch(API+"?barcode="+code)
+  .then(r=>r.json())
+  .then(tampil);
+}
+
+function startScanner(){
+
+  if(scanner) return;
 
   scanner=new Html5Qrcode("reader");
 
   scanner.start(
     {facingMode:"environment"},
-    {fps:18,qrbox:260},
-    txt=>{
-      beep();
-      barcode.value=txt;
-      cari(txt);
+    {fps:12, qrbox:250},
 
-      scanner.stop().then(()=>{
-        scanner=null;
-        scanning=false;
-        scanline.style.display="none";
-        placeholder.style.display="block";
-      });
+    (decodedText)=>{
+
+      beep();
+
+      document.getElementById("barcode").value=decodedText;
+
+      fetch(API+"?barcode="+decodedText)
+      .then(r=>r.json())
+      .then(tampil);
+
     }
   );
 }
 
-reader.addEventListener("click", startScan);
+/* AUTO SCAN SAAT HALAMAN DIBUKA */
+window.onload = function(){
+  startScanner();
+};
 
-barcode.addEventListener("change",()=>{
-  cari(barcode.value);
-  barcode.blur();
-});
 </script>
 
 </body>
