@@ -122,6 +122,7 @@ const API="https://script.google.com/macros/s/AKfycbzGsZf77mHFUbso_BMUKzGO3C7TIo
 
 let scanner=null;
 let scanning=false;
+let resetTimer;
 
 function beep(){
   const ctx=new(window.AudioContext||window.webkitAudioContext)();
@@ -144,6 +145,14 @@ function tampil(data){
   }
 }
 
+  clearTimeout(resetTimer);
+  resetTimer=setTimeout(()=>{
+    hasil.innerHTML="";
+    barcode.value="";
+    scanning=true;
+  },8000);
+}
+  
 async function cari(code){
   try{
     const r=await fetch(API+"?barcode="+code);
