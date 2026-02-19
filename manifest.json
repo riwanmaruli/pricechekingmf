@@ -1,9 +1,0 @@
-{
-  "name":"PRICE CHECKING TRANSMART MEDAN FAIR",
-  "short_name":"Price Check",
-  "start_url":".",
-  "display":"standalone",
-  "orientation":"portrait",
-  "background_color":"#ffffff",
-  "theme_color":"#e31837"
-}
